@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import roomescape.domain.Reservation;
+import roomescape.exception.NotFoundReservationException;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -30,24 +31,39 @@ public class ReservationController {
         return ResponseEntity.ok().body(reservations);
     }
 
-     // 예약 추가
+    // 예약 추가
+    // 예외처리
     @PostMapping("/reservations")
     public ResponseEntity<Reservation> creatReservation(@RequestBody Reservation reservation) {
         Reservation addReservation = reservation.toEntity(index.getAndIncrement(),reservation);
+        if(reservation.getDate().equals(null) || reservation.getDate().equals(""))
+            throw new NotFoundReservationException("Invalid reservation information");
+        if(reservation.getName().equals(null) || reservation.getDate().equals(""))
+            throw new NotFoundReservationException("Invalid reservation information");
+        if(reservation.getTime().equals(null) || reservation.getDate().equals(""))
+            throw new NotFoundReservationException("Invalid reservation information");
+
         reservations.add(addReservation);
         return ResponseEntity.created(URI.create("/reservations/" + addReservation.getId())).build();
     }
 
 
     // 예약 취소
+    // 예외처리
     @DeleteMapping("/reservations/{id}")
     public ResponseEntity<Void> deleteReservation(@PathVariable Long id){
         Reservation deleteReservation = reservations.stream()
                 .filter(it->Objects.equals(it.getId(), id))
                 .findFirst()
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> new NotFoundReservationException("Reservation not found with id: " + id));
+
         reservations.remove(deleteReservation);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(NotFoundReservationException.class)
+    public ResponseEntity<String> handleException(NotFoundReservationException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
 }

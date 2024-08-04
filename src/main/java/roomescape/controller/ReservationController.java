@@ -1,9 +1,11 @@
 package roomescape.controller;
 
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import roomescape.domain.Reservation;
 import roomescape.exception.NotFoundReservationException;
@@ -31,24 +33,17 @@ public class ReservationController {
         return ResponseEntity.ok().body(reservations);
     }
 
-    // 예약 추가
+    // 예약추가
     // 예외처리
     @PostMapping("/reservations")
-    public ResponseEntity<Reservation> creatReservation(@RequestBody Reservation reservation) {
+    public ResponseEntity<Reservation> createReservation(@Valid @RequestBody Reservation reservation) {
         Reservation addReservation = reservation.toEntity(index.getAndIncrement(),reservation);
-        if(reservation.getDate().equals(null) || reservation.getDate().equals(""))
-            throw new NotFoundReservationException("Invalid reservation information");
-        if(reservation.getName().equals(null) || reservation.getDate().equals(""))
-            throw new NotFoundReservationException("Invalid reservation information");
-        if(reservation.getTime().equals(null) || reservation.getDate().equals(""))
-            throw new NotFoundReservationException("Invalid reservation information");
-
         reservations.add(addReservation);
         return ResponseEntity.created(URI.create("/reservations/" + addReservation.getId())).build();
     }
 
 
-    // 예약 취소
+    // 예약취소
     // 예외처리
     @DeleteMapping("/reservations/{id}")
     public ResponseEntity<Void> deleteReservation(@PathVariable Long id){
@@ -65,5 +60,11 @@ public class ReservationController {
     @ExceptionHandler(NotFoundReservationException.class)
     public ResponseEntity<String> handleException(NotFoundReservationException e) {
         return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        return ResponseEntity.badRequest().body(errorMessage);
     }
 }

@@ -34,7 +34,6 @@ public class ReservationController {
     }
 
     // 예약추가
-    // 예외처리
     @PostMapping("/reservations")
     public ResponseEntity<Reservation> createReservation(@Valid @RequestBody Reservation reservation) {
         Reservation addReservation = reservation.toEntity(index.getAndIncrement(),reservation);
@@ -44,7 +43,6 @@ public class ReservationController {
 
 
     // 예약취소
-    // 예외처리
     @DeleteMapping("/reservations/{id}")
     public ResponseEntity<Void> deleteReservation(@PathVariable Long id){
         Reservation deleteReservation = reservations.stream()

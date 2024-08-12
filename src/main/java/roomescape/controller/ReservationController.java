@@ -2,8 +2,10 @@ package roomescape.controller;
 
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,12 @@ public class ReservationController {
 
     private AtomicLong index = new AtomicLong(1);
     private List<Reservation> reservations = new ArrayList<>();
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    public ReservationController(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
 
     @GetMapping("/reservation")
     public String reservation(){
@@ -30,6 +38,16 @@ public class ReservationController {
     //예약 조회
     @GetMapping("/reservations")
     public ResponseEntity<List<Reservation>> reservations() {
+        String sql = "SELECT id, name, date, time FROM reservation";
+        List<Reservation> reservations = jdbcTemplate.query(sql,
+                (rs, rowNum) ->
+                    new Reservation(
+                            rs.getLong("id"),
+                            rs.getString("name"),
+                            rs.getString("date"),
+                            rs.getString("time")
+                    )
+                );
         return ResponseEntity.ok().body(reservations);
     }
 

@@ -1,8 +1,3 @@
---
--- spring.h2.console.enabled=true
--- spring.h2.console.path=/h2-console
--- spring.datasource.url=jdbc:h2:mem:database
-
 CREATE TABLE reservation
 (
     id      BIGINT       NOT NULL AUTO_INCREMENT,

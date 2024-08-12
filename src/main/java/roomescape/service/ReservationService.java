@@ -1,2 +1,5 @@
-package roomescape.service;public class ReservationService {
+package roomescape.service;
+
+public class ReservationService {
+
 }
